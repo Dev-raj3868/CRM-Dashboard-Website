@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
 import { fetchProducts, deleteProduct, updateProduct } from '../store/slices/productSlice';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';

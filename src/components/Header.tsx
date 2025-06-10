@@ -1,6 +1,7 @@
 
 import { LogOut, User } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
 import { logout } from '../store/slices/authSlice';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';

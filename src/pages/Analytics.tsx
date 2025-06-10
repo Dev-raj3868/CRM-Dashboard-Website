@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
 import { fetchProducts } from '../store/slices/productSlice';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
