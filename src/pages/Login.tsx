@@ -23,7 +23,13 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Attempting login with:', { username, password });
     dispatch(loginUser({ username, password }));
+  };
+
+  const loadDemoCredentials = () => {
+    setUsername('kminchelle');
+    setPassword('0lelplR');
   };
 
   return (
@@ -41,7 +47,12 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {error === 'Login failed' 
+                    ? 'Invalid username or password. Please check your credentials and try again.' 
+                    : error
+                  }
+                </AlertDescription>
               </Alert>
             )}
             
@@ -86,9 +97,22 @@ const Login = () => {
               )}
             </Button>
             
-            <div className="text-center text-sm text-gray-600">
-              <p>Demo credentials:</p>
-              <p>Username: kminchelle | Password: 0lelplR</p>
+            <div className="text-center space-y-2">
+              <div className="text-sm text-gray-600">
+                <p>Demo credentials for testing:</p>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={loadDemoCredentials}
+                  className="mt-2"
+                >
+                  Load Demo Credentials
+                </Button>
+              </div>
+              <div className="text-xs text-gray-500">
+                <p>Username: kminchelle | Password: 0lelplR</p>
+              </div>
             </div>
           </form>
         </CardContent>

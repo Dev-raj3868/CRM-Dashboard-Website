@@ -29,20 +29,28 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ username, password }: { username: string; password: string }) => {
-    const response = await fetch('https://dummyjson.com/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, expiresInMins: 30 }),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Login failed');
+  async ({ username, password }: { username: string; password: string }, { rejectWithValue }) => {
+    try {
+      console.log('Making login request to DummyJSON API');
+      const response = await fetch('https://dummyjson.com/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, expiresInMins: 30 }),
+      });
+      
+      const data = await response.json();
+      console.log('Login response:', { status: response.status, data });
+      
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Login failed');
+      }
+      
+      localStorage.setItem('token', data.token);
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      return rejectWithValue('Network error. Please try again.');
     }
-    
-    const data = await response.json();
-    localStorage.setItem('token', data.token);
-    return data;
   }
 );
 
@@ -71,10 +79,12 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.token = action.payload.token;
         state.isAuthenticated = true;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = action.payload as string || 'Login failed';
+        state.isAuthenticated = false;
       });
   },
 });
