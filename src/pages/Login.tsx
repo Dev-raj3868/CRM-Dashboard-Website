@@ -2,34 +2,41 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { useAppDispatch } from '../hooks/useAppDispatch';
-import { loginUser, clearError } from '../store/slices/authSlice';
+import { loginUser, signupUser, clearError, initializeAuth } from '../store/slices/authSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock, Mail } from 'lucide-react';
 
 const Login = () => {
-  const [username, setUsername] = useState('kminchelle');
-  const [password, setPassword] = useState('0lelplR');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignup, setIsSignup] = useState(false);
   
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(clearError());
+    dispatch(initializeAuth());
   }, [dispatch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Attempting login with:', { username, password });
-    dispatch(loginUser({ username, password }));
+    console.log(`Attempting ${isSignup ? 'signup' : 'login'} with:`, { email });
+    
+    if (isSignup) {
+      dispatch(signupUser({ email, password }));
+    } else {
+      dispatch(loginUser({ email, password }));
+    }
   };
 
   const loadDemoCredentials = () => {
-    setUsername('kminchelle');
-    setPassword('0lelplR');
+    setEmail('demo@example.com');
+    setPassword('password123');
   };
 
   return (
@@ -37,10 +44,14 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-            <Lock className="h-6 w-6 text-blue-600" />
+            {isSignup ? <Mail className="h-6 w-6 text-blue-600" /> : <Lock className="h-6 w-6 text-blue-600" />}
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your CRM account</CardDescription>
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            {isSignup ? 'Create Account' : 'Welcome Back'}
+          </CardTitle>
+          <CardDescription>
+            {isSignup ? 'Sign up for your CRM account' : 'Sign in to your CRM account'}
+          </CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -48,22 +59,19 @@ const Login = () => {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {error === 'Login failed' 
-                    ? 'Invalid username or password. Please check your credentials and try again.' 
-                    : error
-                  }
+                  {error}
                 </AlertDescription>
               </Alert>
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               />
@@ -90,29 +98,43 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {isSignup ? 'Creating account...' : 'Signing in...'}
                 </>
               ) : (
-                'Sign In'
+                isSignup ? 'Sign Up' : 'Sign In'
               )}
             </Button>
             
             <div className="text-center space-y-2">
-              <div className="text-sm text-gray-600">
-                <p>Demo credentials for testing:</p>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={loadDemoCredentials}
-                  className="mt-2"
-                >
-                  Load Demo Credentials
-                </Button>
-              </div>
-              <div className="text-xs text-gray-500">
-                <p>Username: kminchelle | Password: 0lelplR</p>
-              </div>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => setIsSignup(!isSignup)}
+                className="text-sm text-blue-600 hover:text-blue-700"
+              >
+                {isSignup 
+                  ? 'Already have an account? Sign in' 
+                  : "Don't have an account? Sign up"
+                }
+              </Button>
+              
+              {!isSignup && (
+                <div className="text-sm text-gray-600">
+                  <p>Demo credentials for testing:</p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={loadDemoCredentials}
+                    className="mt-2"
+                  >
+                    Load Demo Credentials
+                  </Button>
+                  <div className="text-xs text-gray-500 mt-1">
+                    <p>Email: demo@example.com | Password: password123</p>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         </CardContent>

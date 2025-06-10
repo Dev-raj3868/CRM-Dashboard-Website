@@ -1,19 +1,17 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { supabase } from '../../integrations/supabase/client';
 
 interface User {
-  id: number;
-  username: string;
+  id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  image: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  session: any;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -21,35 +19,94 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
+  session: null,
   isLoading: false,
   error: null,
-  isAuthenticated: !!localStorage.getItem('token'),
+  isAuthenticated: false,
 };
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ username, password }: { username: string; password: string }, { rejectWithValue }) => {
+  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      console.log('Making login request to DummyJSON API');
-      const response = await fetch('https://dummyjson.com/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, expiresInMins: 30 }),
+      console.log('Attempting login with Supabase Auth');
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
       
-      const data = await response.json();
-      console.log('Login response:', { status: response.status, data });
+      console.log('Login response:', { data, error });
       
-      if (!response.ok) {
-        return rejectWithValue(data.message || 'Login failed');
+      if (error) {
+        return rejectWithValue(error.message);
       }
       
-      localStorage.setItem('token', data.token);
-      return data;
+      return {
+        user: data.user,
+        session: data.session,
+      };
     } catch (error) {
       console.error('Login error:', error);
       return rejectWithValue('Network error. Please try again.');
+    }
+  }
+);
+
+export const signupUser = createAsyncThunk(
+  'auth/signupUser',
+  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      console.log('Attempting signup with Supabase Auth');
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+      
+      console.log('Signup response:', { data, error });
+      
+      if (error) {
+        return rejectWithValue(error.message);
+      }
+      
+      return {
+        user: data.user,
+        session: data.session,
+      };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return rejectWithValue('Network error. Please try again.');
+    }
+  }
+);
+
+export const initializeAuth = createAsyncThunk(
+  'auth/initialize',
+  async (_, { dispatch }) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Set up auth state change listener
+      supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session);
+        if (session) {
+          dispatch(setAuthData({
+            user: session.user,
+            session: session,
+          }));
+        } else {
+          dispatch(logout());
+        }
+      });
+      
+      return session;
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+      throw error;
     }
   }
 );
@@ -59,13 +116,24 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem('token');
+      supabase.auth.signOut();
       state.user = null;
-      state.token = null;
+      state.session = null;
       state.isAuthenticated = false;
     },
     clearError: (state) => {
       state.error = null;
+    },
+    setAuthData: (state, action) => {
+      const { user, session } = action.payload;
+      state.user = user ? {
+        id: user.id,
+        email: user.email,
+        firstName: user.user_metadata?.firstName,
+        lastName: user.user_metadata?.lastName,
+      } : null;
+      state.session = session;
+      state.isAuthenticated = !!session;
     },
   },
   extraReducers: (builder) => {
@@ -76,8 +144,14 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
-        state.token = action.payload.token;
+        const { user, session } = action.payload;
+        state.user = {
+          id: user.id,
+          email: user.email,
+          firstName: user.user_metadata?.firstName,
+          lastName: user.user_metadata?.lastName,
+        };
+        state.session = session;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -85,9 +159,45 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string || 'Login failed';
         state.isAuthenticated = false;
+      })
+      .addCase(signupUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(signupUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const { user, session } = action.payload;
+        if (user && session) {
+          state.user = {
+            id: user.id,
+            email: user.email,
+            firstName: user.user_metadata?.firstName,
+            lastName: user.user_metadata?.lastName,
+          };
+          state.session = session;
+          state.isAuthenticated = true;
+        }
+        state.error = null;
+      })
+      .addCase(signupUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string || 'Signup failed';
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        const session = action.payload;
+        if (session) {
+          state.user = {
+            id: session.user.id,
+            email: session.user.email,
+            firstName: session.user.user_metadata?.firstName,
+            lastName: session.user.user_metadata?.lastName,
+          };
+          state.session = session;
+          state.isAuthenticated = true;
+        }
       });
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setAuthData } = authSlice.actions;
 export default authSlice.reducer;
