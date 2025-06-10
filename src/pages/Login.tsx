@@ -41,7 +41,7 @@ const Login = () => {
   };
 
   const loadDemoCredentials = () => {
-    setEmail('demo@example.com');
+    setEmail('test@example.com');
     setPassword('password123');
   };
 
@@ -140,7 +140,7 @@ const Login = () => {
                     Load Demo Credentials
                   </Button>
                   <div className="text-xs text-gray-500 mt-1">
-                    <p>Email: demo@example.com | Password: password123</p>
+                    <p>Email: test@example.com | Password: password123</p>
                   </div>
                 </div>
               )}

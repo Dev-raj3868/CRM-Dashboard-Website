@@ -51,7 +51,7 @@ const Header = () => {
             >
               <div className="flex flex-col space-y-1 p-2">
                 <p className="text-sm font-medium transition-colors duration-200 hover:text-blue-600">
-                  {user?.firstName} {user?.lastName}
+                  {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'User'}
                 </p>
                 <p className="text-xs text-muted-foreground transition-colors duration-200 hover:text-gray-700">
                   {user?.email}
