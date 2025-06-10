@@ -189,7 +189,7 @@ const Analytics = () => {
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium">High-performing products</p>
-                  <p className="text-xs text-muted-foreground">Rating > 4.5</p>
+                  <p className="text-xs text-muted-foreground">Rating {`>`} 4.5</p>
                 </div>
                 <div className="text-lg font-bold text-blue-600">
                   {products.filter(p => p.rating > 4.5).length}
@@ -199,7 +199,7 @@ const Analytics = () => {
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium">Well-stocked items</p>
-                  <p className="text-xs text-muted-foreground">Stock > 50</p>
+                  <p className="text-xs text-muted-foreground">Stock {`>`} 50</p>
                 </div>
                 <div className="text-lg font-bold text-green-600">
                   {products.filter(p => p.stock > 50).length}
@@ -209,7 +209,7 @@ const Analytics = () => {
               <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium">Premium products</p>
-                  <p className="text-xs text-muted-foreground">Price > $100</p>
+                  <p className="text-xs text-muted-foreground">Price {`>`} $100</p>
                 </div>
                 <div className="text-lg font-bold text-orange-600">
                   {products.filter(p => p.price > 100).length}
@@ -219,7 +219,7 @@ const Analytics = () => {
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                 <div>
                   <p className="text-sm font-medium">Needs restocking</p>
-                  <p className="text-xs text-muted-foreground">Stock < 5</p>
+                  <p className="text-xs text-muted-foreground">Stock {`<`} 5</p>
                 </div>
                 <div className="text-lg font-bold text-red-600">
                   {products.filter(p => p.stock < 5).length}
