@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useAppSelector } from '../hooks/useAppSelector';
 import { loginUser, signupUser, clearError } from '../store/slices/authSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
