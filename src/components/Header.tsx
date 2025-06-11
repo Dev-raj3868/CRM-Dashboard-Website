@@ -14,7 +14,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 animate-slide-in-from-top">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <h1 className="text-xl font-semibold text-gray-900">CRM Dashboard</h1>
@@ -23,7 +23,7 @@ const Header = () => {
         <div className="flex items-center space-x-4">
           <NotificationBox />
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 animate-fade-in">
             <User className="h-5 w-5 text-gray-600" />
             <span className="text-sm text-gray-700">
               {user?.firstName} {user?.lastName}
@@ -34,7 +34,7 @@ const Header = () => {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 hover-scale"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>

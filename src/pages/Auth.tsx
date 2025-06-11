@@ -7,6 +7,7 @@ import { loginUser, signupUser, clearError } from '../store/slices/authSlice';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/use-toast';
+import { Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +17,8 @@ const Auth = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -74,7 +77,7 @@ const Auth = () => {
         await dispatch(loginUser({ email, password })).unwrap();
         toast({
           title: "Success",
-          description: "Logged in successfully!",
+          description: "Welcome back!",
         });
       } else {
         await dispatch(signupUser({ 
@@ -94,148 +97,181 @@ const Auth = () => {
     }
   };
 
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    // Clear form when switching modes
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
+    setPhone('');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg animate-fade-in">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
-            {isLogin ? 'Sign in to your account' : 'Create your account'}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
-        </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-tr from-purple-400/20 to-pink-400/20 animate-pulse delay-1000"></div>
+      </div>
+      
+      <div className="relative z-10 max-w-md w-full mx-4">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 animate-scale-in border border-white/20">
+          {/* Header */}
+          <div className="text-center mb-8 animate-fade-in">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4 animate-bounce">
+              <User className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              {isLogin ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="mt-2 text-gray-600">
+              {isLogin ? 'Sign in to your account' : 'Join us today'}
+            </p>
+          </div>
+          
+          {/* Form */}
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Name fields for signup */}
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                    First Name *
-                  </label>
+              <div className="grid grid-cols-2 gap-4 animate-slide-in-from-left">
+                <div className="relative">
                   <Input
                     id="firstName"
-                    name="firstName"
                     type="text"
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="mt-1"
-                    placeholder="Enter your first name"
+                    className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                    placeholder="First Name"
                   />
+                  <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                    Last Name *
-                  </label>
+                <div className="relative">
                   <Input
                     id="lastName"
-                    name="lastName"
                     type="text"
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="mt-1"
-                    placeholder="Enter your last name"
+                    className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                    placeholder="Last Name"
                   />
+                  <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 </div>
               </div>
             )}
 
+            {/* Phone for signup */}
             {!isLogin && (
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
+              <div className="relative animate-slide-in-from-left delay-100">
                 <Input
                   id="phone"
-                  name="phone"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="mt-1"
-                  placeholder="Enter your phone number"
+                  className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                  placeholder="Phone Number (optional)"
                 />
+                <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
               </div>
             )}
             
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address *
-              </label>
+            {/* Email */}
+            <div className="relative animate-slide-in-from-left delay-200">
               <Input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
-                placeholder="Enter your email"
+                className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                placeholder="Email address"
               />
+              <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
             
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password *
-              </label>
+            {/* Password */}
+            <div className="relative animate-slide-in-from-left delay-300">
               <Input
                 id="password"
-                name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete={isLogin ? "current-password" : "new-password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
-                placeholder="Enter your password"
+                className="pl-10 pr-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                placeholder="Password"
               />
+              <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
 
+            {/* Confirm Password for signup */}
             {!isLogin && (
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password *
-                </label>
+              <div className="relative animate-slide-in-from-left delay-400">
                 <Input
                   id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1"
-                  placeholder="Confirm your password"
+                  className="pl-10 pr-10 h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                  placeholder="Confirm Password"
                 />
+                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             )}
-          </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {isLogin ? 'Signing in...' : 'Creating account...'}
-              </div>
-            ) : (
-              isLogin ? 'Sign in' : 'Create account'
-            )}
-          </Button>
-        </form>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 animate-slide-in-from-left delay-500"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  {isLogin ? 'Signing in...' : 'Creating account...'}
+                </div>
+              ) : (
+                <span className="flex items-center justify-center">
+                  {isLogin ? 'Sign In' : 'Create Account'}
+                </span>
+              )}
+            </Button>
+          </form>
+
+          {/* Toggle between login/signup */}
+          <div className="mt-6 text-center animate-fade-in delay-600">
+            <p className="text-gray-600">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+            </p>
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="mt-2 font-semibold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+            >
+              {isLogin ? 'Create an account' : 'Sign in instead'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

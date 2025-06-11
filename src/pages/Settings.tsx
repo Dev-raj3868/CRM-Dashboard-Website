@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '../hooks/useAppSelector';
+import { useAppSelector } from '../hooks/useAppSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -40,14 +40,14 @@ const Settings = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Profile Settings */}
-        <Card>
+        <Card className="animate-slide-in-from-left">
           <CardHeader>
             <CardTitle className="flex items-center">
               <User className="mr-2 h-5 w-5" />
@@ -112,7 +112,7 @@ const Settings = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full hover-scale">
                 Update Profile
               </Button>
             </form>
@@ -180,7 +180,7 @@ const Settings = () => {
         </Card>
 
         {/* Security Settings */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 animate-slide-in-from-right">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Shield className="mr-2 h-5 w-5" />
@@ -192,16 +192,16 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button variant="outline">
+              <Button variant="outline" className="hover-scale">
                 Change Password
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="hover-scale">
                 Two-Factor Authentication
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" className="hover-scale">
                 Download Account Data
               </Button>
-              <Button variant="destructive">
+              <Button variant="destructive" className="hover-scale">
                 Delete Account
               </Button>
             </div>

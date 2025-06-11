@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { supabase } from '../../integrations/supabase/client';
 
@@ -7,6 +6,7 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
 }
 
 interface AuthState {
@@ -56,7 +56,19 @@ export const loginUser = createAsyncThunk(
 
 export const signupUser = createAsyncThunk(
   'auth/signupUser',
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+  async ({ 
+    email, 
+    password, 
+    firstName, 
+    lastName, 
+    phone 
+  }: { 
+    email: string; 
+    password: string; 
+    firstName?: string; 
+    lastName?: string; 
+    phone?: string; 
+  }, { rejectWithValue }) => {
     try {
       console.log('Attempting signup with Supabase Auth');
       const redirectUrl = `${window.location.origin}/`;
@@ -65,7 +77,12 @@ export const signupUser = createAsyncThunk(
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            firstName,
+            lastName,
+            phone
+          }
         }
       });
       
@@ -83,6 +100,14 @@ export const signupUser = createAsyncThunk(
       console.error('Signup error:', error);
       return rejectWithValue('Network error. Please try again.');
     }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { dispatch }) => {
+    await supabase.auth.signOut();
+    dispatch(clearAuth());
   }
 );
 
@@ -133,6 +158,7 @@ const authSlice = createSlice({
         email: user.email,
         firstName: user.user_metadata?.firstName,
         lastName: user.user_metadata?.lastName,
+        phone: user.user_metadata?.phone,
       } : null;
       state.session = session;
       state.isAuthenticated = !!session;
@@ -161,6 +187,7 @@ const authSlice = createSlice({
           email: user.email,
           firstName: user.user_metadata?.firstName,
           lastName: user.user_metadata?.lastName,
+          phone: user.user_metadata?.phone,
         };
         state.session = session;
         state.isAuthenticated = true;
@@ -184,6 +211,7 @@ const authSlice = createSlice({
             email: user.email,
             firstName: user.user_metadata?.firstName,
             lastName: user.user_metadata?.lastName,
+            phone: user.user_metadata?.phone,
           };
           state.session = session;
           state.isAuthenticated = true;
@@ -194,6 +222,11 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string || 'Signup failed';
       })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.session = null;
+        state.isAuthenticated = false;
+      })
       .addCase(initializeAuth.fulfilled, (state, action) => {
         const session = action.payload;
         if (session) {
@@ -202,6 +235,7 @@ const authSlice = createSlice({
             email: session.user.email,
             firstName: session.user.user_metadata?.firstName,
             lastName: session.user.user_metadata?.lastName,
+            phone: session.user.user_metadata?.phone,
           };
           state.session = session;
           state.isAuthenticated = true;
