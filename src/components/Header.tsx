@@ -1,5 +1,6 @@
 
-import { useAppDispatch, useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { useAppSelector } from '../hooks/useAppSelector';
 import { logoutUser } from '../store/slices/authSlice';
 import { Button } from './ui/button';
 import { LogOut, User } from 'lucide-react';
