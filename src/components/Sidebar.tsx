@@ -1,6 +1,6 @@
 
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Package, Home, Users } from 'lucide-react';
+import { BarChart3, Package, Home, Users, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const navigation = [
@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const Sidebar = () => {

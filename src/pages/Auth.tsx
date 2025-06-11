@@ -13,6 +13,9 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -42,7 +45,16 @@ const Auth = () => {
     if (!email || !password) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isLogin && (!firstName || !lastName)) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in your name",
         variant: "destructive",
       });
       return;
@@ -65,7 +77,13 @@ const Auth = () => {
           description: "Logged in successfully!",
         });
       } else {
-        await dispatch(signupUser({ email, password })).unwrap();
+        await dispatch(signupUser({ 
+          email, 
+          password, 
+          firstName, 
+          lastName, 
+          phone 
+        })).unwrap();
         toast({
           title: "Success",
           description: "Account created successfully! Please check your email to verify your account.",
@@ -97,9 +115,61 @@ const Auth = () => {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            {!isLogin && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                    First Name *
+                  </label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="mt-1"
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                    Last Name *
+                  </label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="mt-1"
+                    placeholder="Enter your last name"
+                  />
+                </div>
+              </div>
+            )}
+
+            {!isLogin && (
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  Phone Number
+                </label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="mt-1"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+            )}
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email address *
               </label>
               <Input
                 id="email"
@@ -116,7 +186,7 @@ const Auth = () => {
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Password *
               </label>
               <Input
                 id="password"
@@ -134,7 +204,7 @@ const Auth = () => {
             {!isLogin && (
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
+                  Confirm Password *
                 </label>
                 <Input
                   id="confirmPassword"
