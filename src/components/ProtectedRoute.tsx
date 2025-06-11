@@ -1,4 +1,5 @@
 
+import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../hooks/useAppSelector';
 
 interface ProtectedRouteProps {
@@ -16,18 +17,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
-          <p className="text-gray-600">Please authenticate to access the CRM dashboard.</p>
-        </div>
-      </div>
-    );
-  }
-  
-  return <>{children}</>;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 
 export default ProtectedRoute;

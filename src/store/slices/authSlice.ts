@@ -15,14 +15,16 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
   session: null,
-  isLoading: false,
+  isLoading: true,
   error: null,
   isAuthenticated: false,
+  isInitialized: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -99,7 +101,7 @@ export const initializeAuth = createAsyncThunk(
             session: session,
           }));
         } else {
-          dispatch(logout());
+          dispatch(clearAuth());
         }
       });
       
@@ -134,6 +136,15 @@ const authSlice = createSlice({
       } : null;
       state.session = session;
       state.isAuthenticated = !!session;
+      state.isLoading = false;
+      state.isInitialized = true;
+    },
+    clearAuth: (state) => {
+      state.user = null;
+      state.session = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.isInitialized = true;
     },
   },
   extraReducers: (builder) => {
@@ -195,9 +206,11 @@ const authSlice = createSlice({
           state.session = session;
           state.isAuthenticated = true;
         }
+        state.isLoading = false;
+        state.isInitialized = true;
       });
   },
 });
 
-export const { logout, clearError, setAuthData } = authSlice.actions;
+export const { logout, clearError, setAuthData, clearAuth } = authSlice.actions;
 export default authSlice.reducer;
