@@ -1,117 +1,17 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { supabase } from '../../integrations/supabase/client';
-
-interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-}
-
-interface AuthState {
-  user: User | null;
-  session: any;
-  isLoading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
-  isInitialized: boolean;
-}
-
-const initialState: AuthState = {
-  user: {
-    id: 'guest-user',
-    email: 'guest@example.com',
-    firstName: 'Guest',
-    lastName: 'User',
-  },
-  session: { user: { id: 'guest-user' } },
-  isLoading: false,
-  error: null,
-  isAuthenticated: true, // Always authenticated for guest access
-  isInitialized: true,
-};
-
-export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
-    // Skip actual authentication, return guest user
-    return {
-      user: {
-        id: 'guest-user',
-        email: email || 'guest@example.com',
-        user_metadata: {
-          firstName: 'Guest',
-          lastName: 'User',
-        }
-      },
-      session: { user: { id: 'guest-user' } },
-    };
-  }
-);
-
-export const signupUser = createAsyncThunk(
-  'auth/signupUser',
-  async ({ 
-    email, 
-    password, 
-    firstName, 
-    lastName, 
-    phone 
-  }: { 
-    email: string; 
-    password: string; 
-    firstName?: string; 
-    lastName?: string; 
-    phone?: string; 
-  }, { rejectWithValue }) => {
-    // Skip actual signup, return guest user
-    return {
-      user: {
-        id: 'guest-user',
-        email: email || 'guest@example.com',
-        user_metadata: {
-          firstName: firstName || 'Guest',
-          lastName: lastName || 'User',
-          phone: phone || '',
-        }
-      },
-      session: { user: { id: 'guest-user' } },
-    };
-  }
-);
-
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async (_, { dispatch }) => {
-    // Don't actually log out, just refresh the guest state
-    dispatch(setGuestAuth());
-  }
-);
-
-export const initializeAuth = createAsyncThunk(
-  'auth/initialize',
-  async (_, { dispatch }) => {
-    // Always initialize with guest user
-    dispatch(setGuestAuth());
-    return { user: { id: 'guest-user' } };
-  }
-);
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { AuthState } from '../types/auth';
+import { initialAuthState, GUEST_USER, GUEST_SESSION } from '../constants/authConstants';
+import { loginUser, signupUser, logoutUser, initializeAuth } from '../thunks/authThunks';
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState,
+  initialState: initialAuthState,
   reducers: {
     logout: (state) => {
       // Reset to guest user instead of logging out
-      state.user = {
-        id: 'guest-user',
-        email: 'guest@example.com',
-        firstName: 'Guest',
-        lastName: 'User',
-      };
-      state.session = { user: { id: 'guest-user' } };
+      state.user = { ...GUEST_USER };
+      state.session = { ...GUEST_SESSION };
       state.isAuthenticated = true;
     },
     clearError: (state) => {
@@ -125,38 +25,23 @@ const authSlice = createSlice({
         firstName: user.user_metadata?.firstName || 'Guest',
         lastName: user.user_metadata?.lastName || 'User',
         phone: user.user_metadata?.phone || '',
-      } : {
-        id: 'guest-user',
-        email: 'guest@example.com',
-        firstName: 'Guest',
-        lastName: 'User',
-      };
-      state.session = session || { user: { id: 'guest-user' } };
+      } : { ...GUEST_USER };
+      state.session = session || { ...GUEST_SESSION };
       state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
     },
     setGuestAuth: (state) => {
-      state.user = {
-        id: 'guest-user',
-        email: 'guest@example.com',
-        firstName: 'Guest',
-        lastName: 'User',
-      };
-      state.session = { user: { id: 'guest-user' } };
+      state.user = { ...GUEST_USER };
+      state.session = { ...GUEST_SESSION };
       state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
     },
     clearAuth: (state) => {
       // Don't clear auth, set guest auth instead
-      state.user = {
-        id: 'guest-user',
-        email: 'guest@example.com',
-        firstName: 'Guest',
-        lastName: 'User',
-      };
-      state.session = { user: { id: 'guest-user' } };
+      state.user = { ...GUEST_USER };
+      state.session = { ...GUEST_SESSION };
       state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
@@ -178,7 +63,7 @@ const authSlice = createSlice({
           lastName: user.user_metadata?.lastName || 'User',
           phone: user.user_metadata?.phone || '',
         };
-        state.session = session || { user: { id: 'guest-user' } };
+        state.session = session || { ...GUEST_SESSION };
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -202,7 +87,7 @@ const authSlice = createSlice({
           lastName: user.user_metadata?.lastName || 'User',
           phone: user.user_metadata?.phone || '',
         };
-        state.session = session || { user: { id: 'guest-user' } };
+        state.session = session || { ...GUEST_SESSION };
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -214,23 +99,13 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state) => {
         // Reset to guest user instead of clearing auth
-        state.user = {
-          id: 'guest-user',
-          email: 'guest@example.com',
-          firstName: 'Guest',
-          lastName: 'User',
-        };
-        state.session = { user: { id: 'guest-user' } };
+        state.user = { ...GUEST_USER };
+        state.session = { ...GUEST_SESSION };
         state.isAuthenticated = true;
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
-        state.user = {
-          id: 'guest-user',
-          email: 'guest@example.com',
-          firstName: 'Guest',
-          lastName: 'User',
-        };
-        state.session = { user: { id: 'guest-user' } };
+        state.user = { ...GUEST_USER };
+        state.session = { ...GUEST_SESSION };
         state.isAuthenticated = true;
         state.isLoading = false;
         state.isInitialized = true;
