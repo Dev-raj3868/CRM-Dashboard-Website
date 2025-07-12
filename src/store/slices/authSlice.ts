@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState } from '../types/auth';
 import { initialAuthState, GUEST_USER, GUEST_SESSION } from '../constants/authConstants';

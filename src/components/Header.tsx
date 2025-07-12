@@ -4,14 +4,17 @@ import { useAppSelector } from '../hooks/useAppSelector';
 import { logoutUser } from '../store/slices/authSlice';
 import { Button } from './ui/button';
 import { LogOut, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import NotificationBox from './NotificationBox';
 
 const Header = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    navigate('/login');
   };
 
   return (

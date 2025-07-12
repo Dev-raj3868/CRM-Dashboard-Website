@@ -48,9 +48,9 @@ export const signupUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { dispatch }) => {
-    // Don't actually log out, just refresh the guest state
-    dispatch(setGuestAuth());
+  async () => {
+    // Return a signal that logout was successful
+    return { redirectToLogin: true };
   }
 );
 
