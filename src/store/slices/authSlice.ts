@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { supabase } from '../../integrations/supabase/client';
 
@@ -19,38 +20,34 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
-  session: null,
-  isLoading: true,
+  user: {
+    id: 'guest-user',
+    email: 'guest@example.com',
+    firstName: 'Guest',
+    lastName: 'User',
+  },
+  session: { user: { id: 'guest-user' } },
+  isLoading: false,
   error: null,
-  isAuthenticated: false,
-  isInitialized: false,
+  isAuthenticated: true, // Always authenticated for guest access
+  isInitialized: true,
 };
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
-    try {
-      console.log('Attempting login with Supabase Auth');
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      console.log('Login response:', { data, error });
-      
-      if (error) {
-        return rejectWithValue(error.message);
-      }
-      
-      return {
-        user: data.user,
-        session: data.session,
-      };
-    } catch (error) {
-      console.error('Login error:', error);
-      return rejectWithValue('Network error. Please try again.');
-    }
+    // Skip actual authentication, return guest user
+    return {
+      user: {
+        id: 'guest-user',
+        email: email || 'guest@example.com',
+        user_metadata: {
+          firstName: 'Guest',
+          lastName: 'User',
+        }
+      },
+      session: { user: { id: 'guest-user' } },
+    };
   }
 );
 
@@ -69,72 +66,36 @@ export const signupUser = createAsyncThunk(
     lastName?: string; 
     phone?: string; 
   }, { rejectWithValue }) => {
-    try {
-      console.log('Attempting signup with Supabase Auth');
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            firstName,
-            lastName,
-            phone
-          }
+    // Skip actual signup, return guest user
+    return {
+      user: {
+        id: 'guest-user',
+        email: email || 'guest@example.com',
+        user_metadata: {
+          firstName: firstName || 'Guest',
+          lastName: lastName || 'User',
+          phone: phone || '',
         }
-      });
-      
-      console.log('Signup response:', { data, error });
-      
-      if (error) {
-        return rejectWithValue(error.message);
-      }
-      
-      return {
-        user: data.user,
-        session: data.session,
-      };
-    } catch (error) {
-      console.error('Signup error:', error);
-      return rejectWithValue('Network error. Please try again.');
-    }
+      },
+      session: { user: { id: 'guest-user' } },
+    };
   }
 );
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { dispatch }) => {
-    await supabase.auth.signOut();
-    dispatch(clearAuth());
+    // Don't actually log out, just refresh the guest state
+    dispatch(setGuestAuth());
   }
 );
 
 export const initializeAuth = createAsyncThunk(
   'auth/initialize',
   async (_, { dispatch }) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Set up auth state change listener
-      supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session);
-        if (session) {
-          dispatch(setAuthData({
-            user: session.user,
-            session: session,
-          }));
-        } else {
-          dispatch(clearAuth());
-        }
-      });
-      
-      return session;
-    } catch (error) {
-      console.error('Auth initialization error:', error);
-      throw error;
-    }
+    // Always initialize with guest user
+    dispatch(setGuestAuth());
+    return { user: { id: 'guest-user' } };
   }
 );
 
@@ -143,10 +104,15 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      supabase.auth.signOut();
-      state.user = null;
-      state.session = null;
-      state.isAuthenticated = false;
+      // Reset to guest user instead of logging out
+      state.user = {
+        id: 'guest-user',
+        email: 'guest@example.com',
+        firstName: 'Guest',
+        lastName: 'User',
+      };
+      state.session = { user: { id: 'guest-user' } };
+      state.isAuthenticated = true;
     },
     clearError: (state) => {
       state.error = null;
@@ -154,21 +120,44 @@ const authSlice = createSlice({
     setAuthData: (state, action) => {
       const { user, session } = action.payload;
       state.user = user ? {
-        id: user.id,
-        email: user.email,
-        firstName: user.user_metadata?.firstName,
-        lastName: user.user_metadata?.lastName,
-        phone: user.user_metadata?.phone,
-      } : null;
-      state.session = session;
-      state.isAuthenticated = !!session;
+        id: user.id || 'guest-user',
+        email: user.email || 'guest@example.com',
+        firstName: user.user_metadata?.firstName || 'Guest',
+        lastName: user.user_metadata?.lastName || 'User',
+        phone: user.user_metadata?.phone || '',
+      } : {
+        id: 'guest-user',
+        email: 'guest@example.com',
+        firstName: 'Guest',
+        lastName: 'User',
+      };
+      state.session = session || { user: { id: 'guest-user' } };
+      state.isAuthenticated = true;
+      state.isLoading = false;
+      state.isInitialized = true;
+    },
+    setGuestAuth: (state) => {
+      state.user = {
+        id: 'guest-user',
+        email: 'guest@example.com',
+        firstName: 'Guest',
+        lastName: 'User',
+      };
+      state.session = { user: { id: 'guest-user' } };
+      state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
     },
     clearAuth: (state) => {
-      state.user = null;
-      state.session = null;
-      state.isAuthenticated = false;
+      // Don't clear auth, set guest auth instead
+      state.user = {
+        id: 'guest-user',
+        email: 'guest@example.com',
+        firstName: 'Guest',
+        lastName: 'User',
+      };
+      state.session = { user: { id: 'guest-user' } };
+      state.isAuthenticated = true;
       state.isLoading = false;
       state.isInitialized = true;
     },
@@ -183,20 +172,21 @@ const authSlice = createSlice({
         state.isLoading = false;
         const { user, session } = action.payload;
         state.user = {
-          id: user.id,
-          email: user.email,
-          firstName: user.user_metadata?.firstName,
-          lastName: user.user_metadata?.lastName,
-          phone: user.user_metadata?.phone,
+          id: user.id || 'guest-user',
+          email: user.email || 'guest@example.com',
+          firstName: user.user_metadata?.firstName || 'Guest',
+          lastName: user.user_metadata?.lastName || 'User',
+          phone: user.user_metadata?.phone || '',
         };
-        state.session = session;
+        state.session = session || { user: { id: 'guest-user' } };
         state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string || 'Login failed';
-        state.isAuthenticated = false;
+        // Still set as authenticated for guest access
+        state.isAuthenticated = true;
       })
       .addCase(signupUser.pending, (state) => {
         state.isLoading = true;
@@ -205,46 +195,48 @@ const authSlice = createSlice({
       .addCase(signupUser.fulfilled, (state, action) => {
         state.isLoading = false;
         const { user, session } = action.payload;
-        if (user && session) {
-          state.user = {
-            id: user.id,
-            email: user.email,
-            firstName: user.user_metadata?.firstName,
-            lastName: user.user_metadata?.lastName,
-            phone: user.user_metadata?.phone,
-          };
-          state.session = session;
-          state.isAuthenticated = true;
-        }
+        state.user = {
+          id: user.id || 'guest-user',
+          email: user.email || 'guest@example.com',
+          firstName: user.user_metadata?.firstName || 'Guest',
+          lastName: user.user_metadata?.lastName || 'User',
+          phone: user.user_metadata?.phone || '',
+        };
+        state.session = session || { user: { id: 'guest-user' } };
+        state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string || 'Signup failed';
+        // Still set as authenticated for guest access
+        state.isAuthenticated = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
-        state.session = null;
-        state.isAuthenticated = false;
+        // Reset to guest user instead of clearing auth
+        state.user = {
+          id: 'guest-user',
+          email: 'guest@example.com',
+          firstName: 'Guest',
+          lastName: 'User',
+        };
+        state.session = { user: { id: 'guest-user' } };
+        state.isAuthenticated = true;
       })
       .addCase(initializeAuth.fulfilled, (state, action) => {
-        const session = action.payload;
-        if (session) {
-          state.user = {
-            id: session.user.id,
-            email: session.user.email,
-            firstName: session.user.user_metadata?.firstName,
-            lastName: session.user.user_metadata?.lastName,
-            phone: session.user.user_metadata?.phone,
-          };
-          state.session = session;
-          state.isAuthenticated = true;
-        }
+        state.user = {
+          id: 'guest-user',
+          email: 'guest@example.com',
+          firstName: 'Guest',
+          lastName: 'User',
+        };
+        state.session = { user: { id: 'guest-user' } };
+        state.isAuthenticated = true;
         state.isLoading = false;
         state.isInitialized = true;
       });
   },
 });
 
-export const { logout, clearError, setAuthData, clearAuth } = authSlice.actions;
+export const { logout, clearError, setAuthData, setGuestAuth, clearAuth } = authSlice.actions;
 export default authSlice.reducer;
