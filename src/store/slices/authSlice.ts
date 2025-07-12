@@ -114,4 +114,8 @@ const authSlice = createSlice({
 });
 
 export const { logout, clearError, setAuthData, setGuestAuth, clearAuth } = authSlice.actions;
+
+// Export the thunks for use in components
+export { loginUser, signupUser, logoutUser, initializeAuth };
+
 export default authSlice.reducer;
