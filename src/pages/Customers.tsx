@@ -1,11 +1,10 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Search, Plus, Mail, Phone, MapPin, Star } from 'lucide-react';
+import { Search, Plus, Mail, Phone, MapPin, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import CustomerDetailsModal from '../components/CustomerDetailsModal';
 import AddCustomerModal from '../components/AddCustomerModal';
@@ -110,7 +109,14 @@ const Customers = () => {
     setCustomers(prev => 
       prev.map(c => c.id === updatedCustomer.id ? updatedCustomer : c)
     );
+    setIsDetailsModalOpen(false);
     toast.success('Customer updated successfully!');
+  };
+
+  const handleDeleteCustomer = (customerId: number) => {
+    setCustomers(prev => prev.filter(c => c.id !== customerId));
+    setIsDetailsModalOpen(false);
+    toast.success('Customer deleted successfully!');
   };
 
   const handleAddCustomer = (newCustomerData: any) => {
@@ -304,6 +310,14 @@ const Customers = () => {
                         >
                           Edit
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDeleteCustomer(customer.id)}
+                          className="transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-red-500 text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -319,6 +333,7 @@ const Customers = () => {
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         onSave={handleSaveCustomer}
+        onDelete={handleDeleteCustomer}
         mode={detailsMode}
       />
 

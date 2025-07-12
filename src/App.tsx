@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { store } from './store/store';
 import AuthProvider from './components/AuthProvider';
-import Auth from './pages/Auth';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Analytics from './pages/Analytics';
@@ -28,8 +28,8 @@ const App = () => (
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-              {/* Redirect /auth to dashboard since authentication is bypassed */}
-              <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth" element={<Navigate to="/login" replace />} />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Layout />

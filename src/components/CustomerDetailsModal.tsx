@@ -5,8 +5,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
-import { Mail, Phone, MapPin, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Mail, Phone, MapPin, Star, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Customer {
   id: number;
@@ -26,17 +26,32 @@ interface CustomerDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (customer: Customer) => void;
+  onDelete?: (customerId: number) => void;
   mode: 'view' | 'edit';
 }
 
-const CustomerDetailsModal = ({ customer, isOpen, onClose, onSave, mode }: CustomerDetailsModalProps) => {
-  const [editedCustomer, setEditedCustomer] = useState<Customer | null>(customer);
+const CustomerDetailsModal = ({ customer, isOpen, onClose, onSave, onDelete, mode }: CustomerDetailsModalProps) => {
+  const [editedCustomer, setEditedCustomer] = useState<Customer | null>(null);
   const [isEditing, setIsEditing] = useState(mode === 'edit');
+
+  useEffect(() => {
+    if (customer) {
+      setEditedCustomer({ ...customer });
+    }
+    setIsEditing(mode === 'edit');
+  }, [customer, mode]);
 
   const handleSave = () => {
     if (editedCustomer) {
       onSave(editedCustomer);
       setIsEditing(false);
+      onClose();
+    }
+  };
+
+  const handleDelete = () => {
+    if (editedCustomer && onDelete) {
+      onDelete(editedCustomer.id);
       onClose();
     }
   };
@@ -55,19 +70,32 @@ const CustomerDetailsModal = ({ customer, isOpen, onClose, onSave, mode }: Custo
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl animate-scale-in">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12 transition-transform duration-200 hover:scale-110">
-              <AvatarImage src={displayCustomer?.avatar} alt={displayCustomer?.name} />
-              <AvatarFallback className="bg-blue-100 text-blue-600">
-                {displayCustomer?.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="text-xl font-semibold">{displayCustomer?.name}</h3>
-              <Badge variant={displayCustomer?.status === 'active' ? 'default' : 'secondary'}>
-                {displayCustomer?.status}
-              </Badge>
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-12 w-12 transition-transform duration-200 hover:scale-110">
+                <AvatarImage src={displayCustomer?.avatar} alt={displayCustomer?.name} />
+                <AvatarFallback className="bg-blue-100 text-blue-600">
+                  {displayCustomer?.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="text-xl font-semibold">{displayCustomer?.name}</h3>
+                <Badge variant={displayCustomer?.status === 'active' ? 'default' : 'secondary'}>
+                  {displayCustomer?.status}
+                </Badge>
+              </div>
             </div>
+            {onDelete && !isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            )}
           </DialogTitle>
           <DialogDescription>
             {isEditing ? 'Edit customer information' : 'View customer details'}
